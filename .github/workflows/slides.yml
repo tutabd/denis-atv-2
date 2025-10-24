@@ -1,0 +1,40 @@
+name: Gerar Slides PDF
+
+on:
+  push:
+    paths:
+      # Monitora qualquer arquivo .md dentro da pasta docs
+      - "docs/**.md"
+  # Permite rodar manualmente pela aba Actions
+  workflow_dispatch:
+
+jobs:
+  build-slides:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repositório
+        uses: actions/checkout@v4
+
+      - name: Instalar Pandoc e dependências LaTeX
+        run: |
+          sudo apt-get update
+          # Instala o pandoc e os pacotes LaTeX específicos necessários
+          # texlive-xetex: para o --pdf-engine=xelatex
+          # texlive-latex-extra: contém o Beamer (para slides)
+          # texlive-fonts-recommended: fontes necessárias
+          sudo apt-get install -y pandoc texlive-xetex texlive-latex-extra texlive-fonts-recommended
+
+      - name: Converter Markdown (presentation.md) para PDF
+        run: |
+          pandoc docs/presentation.md \
+            -o slides.pdf \
+            -t beamer \
+            --slide-level=2 \
+            --pdf-engine=xelatex
+      
+      - name: Publicar Artefato (Slides PDF)
+        uses: actions/upload-artifact@v4
+        with:
+          name: slides-pdf
+          path: slides.pdf
